@@ -1,0 +1,2239 @@
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false
+
+-- Текст "By" в центре
+local byLabel = Instance.new("TextLabel")
+byLabel.Size = UDim2.new(0, 200, 0, 50)
+byLabel.Position = UDim2.new(0.5, -100, 0.5, -25)
+byLabel.Text = "By"
+byLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+byLabel.TextSize = 40
+byLabel.Font = Enum.Font.Gotham
+byLabel.BackgroundTransparency = 1
+byLabel.Parent = screenGui
+
+-- Текст для "nig2aotsos"
+local mainLabel = Instance.new("TextLabel")
+mainLabel.Size = UDim2.new(0, 200, 0, 50)
+mainLabel.Position = UDim2.new(0.5, -100, 0.5, 25)
+mainLabel.Text = ""
+mainLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainLabel.TextSize = 30
+mainLabel.Font = Enum.Font.Gotham
+mainLabel.BackgroundTransparency = 1
+mainLabel.Parent = screenGui
+
+-- Loading bar
+local loadingBarFrame = Instance.new("Frame")
+loadingBarFrame.Size = UDim2.new(0, 200, 0, 10)
+loadingBarFrame.Position = UDim2.new(0.5, -100, 0.5, 70) -- Below nig2aotsos
+loadingBarFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+loadingBarFrame.BackgroundTransparency = 0.5
+loadingBarFrame.BorderSizePixel = 0
+loadingBarFrame.Parent = screenGui
+
+local loadingBarFill = Instance.new("Frame")
+loadingBarFill.Size = UDim2.new(0, 0, 1, 0) -- Start with 0 width
+loadingBarFill.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+loadingBarFill.BorderSizePixel = 0
+loadingBarFill.Parent = loadingBarFrame
+
+local loadingBarCorner = Instance.new("UICorner")
+loadingBarCorner.CornerRadius = UDim.new(0, 5)
+loadingBarCorner.Parent = loadingBarFrame
+
+local loadingBarFillCorner = Instance.new("UICorner")
+loadingBarFillCorner.CornerRadius = UDim.new(0, 5)
+loadingBarFillCorner.Parent = loadingBarFill
+
+-- Animate loading bar
+local TweenService = game:GetService("TweenService")
+local loadingTween = TweenService:Create(
+    loadingBarFill,
+    TweenInfo.new(2, Enum.EasingStyle.Linear), -- 2 seconds duration
+    {Size = UDim2.new(1, 0, 1, 0)} -- Full width
+)
+loadingTween:Play()
+
+-- Destroy loading bar after animation
+loadingTween.Completed:Connect(function()
+    wait(0.7) -- Brief pause before destroying
+    loadingBarFrame:Destroy()
+end)
+
+-- Анимация появления nig2aotsos
+local targetText = "nig2aotsos"
+wait(2)
+for i = 1, #targetText do
+    mainLabel.Text = string.sub(targetText, 1, i)
+    wait(0.1)
+end
+
+-- Функция для анимации падения
+local function animateFall(label, duration)
+    local startTime = tick()
+    local initialY = label.Position.Y.Offset
+    local velocity = 0
+    local gravity = 1000
+    
+    while tick() - startTime < duration do
+        local deltaTime = tick() - startTime
+        velocity = velocity + gravity * deltaTime
+        local newY = initialY + velocity * deltaTime
+        label.Position = UDim2.new(
+            label.Position.X.Scale,
+            label.Position.X.Offset,
+            label.Position.Y.Scale,
+            newY
+        )
+        game:GetService("RunService").RenderStepped:Wait()
+    end
+end
+
+-- Функция для создания главного фрейма
+local function createMainFrame()
+    -- Главный фрейм
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 500, 0, 300)
+    frame.Position = UDim2.new(0.5, -250, 0.5, -150)
+    frame.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+    frame.BackgroundTransparency = 0
+    frame.BorderSizePixel = 0
+    frame.Parent = screenGui
+    
+    -- Градиент для фрейма
+    local frameGradient = Instance.new("UIGradient")
+    frameGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(23, 24, 30)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 206, 9))
+    }
+    frameGradient.Parent = frame
+    
+    -- Скругленные углы
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 10)
+    frameCorner.Parent = frame
+
+    -- Кнопка сворачивания/разворачивания
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(0, 60, 0, 60)
+    toggleButton.Position = UDim2.new(0.5, -30, 0.5, -30)
+    toggleButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+    toggleButton.Text = "HUB"
+    toggleButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+    toggleButton.TextSize = 20
+    toggleButton.Font = Enum.Font.Gotham
+    toggleButton.Visible = false
+    toggleButton.Parent = screenGui
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 8)
+    toggleCorner.Parent = toggleButton
+    
+    -- Панель разделов (справа)
+    local sectionPanel = Instance.new("Frame")
+    sectionPanel.Size = UDim2.new(0, 100, 0, 300)
+    sectionPanel.Position = UDim2.new(1, -100, 0, 0)
+    sectionPanel.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+    sectionPanel.BackgroundTransparency = 0.2
+    sectionPanel.BorderSizePixel = 0
+    sectionPanel.Parent = frame
+    
+    local sectionCorner = Instance.new("UICorner")
+    sectionCorner.CornerRadius = UDim.new(0, 8)
+    sectionCorner.Parent = sectionPanel
+
+    -- Контейнер для контента (слева)
+    local contentFrame = Instance.new("Frame")
+    contentFrame.Size = UDim2.new(0, 400, 0, 300)
+    contentFrame.Position = UDim2.new(0, 0, 0, 0)
+    contentFrame.BackgroundTransparency = 1
+    contentFrame.Parent = frame
+
+    -- Новый фрейм для информации игрока
+    local playerInfoFrame = Instance.new("Frame")
+    playerInfoFrame.Size = UDim2.new(0, 280, 0, 40)
+    playerInfoFrame.Position = UDim2.new(0, 10, 0, 250)
+    playerInfoFrame.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+    playerInfoFrame.BackgroundTransparency = 0
+    playerInfoFrame.BorderSizePixel = 0
+    playerInfoFrame.Parent = frame
+    
+    local playerInfoCorner = Instance.new("UICorner")
+    playerInfoCorner.CornerRadius = UDim.new(0, 9)
+    playerInfoCorner.Parent = playerInfoFrame
+
+    -- Аватар игрока
+    local player = game.Players.LocalPlayer
+    local userId = player.UserId
+    local thumbType = Enum.ThumbnailType.AvatarBust
+    local thumbSize = Enum.ThumbnailSize.Size100x100
+    local content, isReady = game.Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+    
+    local avatarImage = Instance.new("ImageLabel")
+    avatarImage.Size = UDim2.new(0, 35, 0, 35)
+    avatarImage.Position = UDim2.new(0, 10, 0, 5)
+    avatarImage.BackgroundTransparency = 1
+    avatarImage.Image = isReady and content or "rbxasset://textures/ui/GuiImagePlaceholder.png"
+    avatarImage.Parent = playerInfoFrame
+    
+    local avatarCorner = Instance.new("UICorner")
+    avatarCorner.CornerRadius = UDim.new(0, 25)
+    avatarCorner.Parent = avatarImage
+
+    -- Ник игрока
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(0, 80, 0, 20)
+    nameLabel.Position = UDim2.new(0, 65, 0, 10)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.Name
+    nameLabel.TextColor3 = Color3.fromRGB(22, 23, 28)
+    nameLabel.TextSize = 16
+    nameLabel.Font = Enum.Font.Gotham
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.Parent = playerInfoFrame
+
+    -- Время работы скрипта
+    local scriptTimeLabel = Instance.new("TextLabel")
+    scriptTimeLabel.Size = UDim2.new(0, 80, 0, 20)
+    scriptTimeLabel.Position = UDim2.new(0, 200, 0, 10)
+    scriptTimeLabel.BackgroundTransparency = 1
+    scriptTimeLabel.Text = "00:00:00"
+    scriptTimeLabel.TextColor3 = Color3.fromRGB(22, 23, 28)
+    scriptTimeLabel.TextSize = 16
+    scriptTimeLabel.Font = Enum.Font.Gotham
+    scriptTimeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    scriptTimeLabel.Parent = playerInfoFrame
+
+    -- Обновление времени работы скрипта
+    local startTime = tick()
+    spawn(function()
+        while true do
+            if not scriptTimeLabel:IsDescendantOf(game) then break end
+            local elapsed = tick() - startTime
+            local hours = math.floor(elapsed / 3600)
+            local minutes = math.floor((elapsed % 3600) / 60)
+            local seconds = math.floor(elapsed % 60)
+            scriptTimeLabel.Text = string.format("%02d:%02d:%02d", hours, minutes, seconds)
+            wait(1)
+        end
+    end)
+
+    -- Список разделов
+    local sections = {"Char", "Discord", "Game", "Visual", "Hub", "Univ"}
+    local sectionFrames = {}
+    local currentFrame = nil
+    local openPanel = nil
+
+    -- Функция для управления панелями
+    local function togglePanel(panel, button)
+        if openPanel and openPanel ~= panel then
+            return
+        end
+        panel.Visible = not panel.Visible
+        openPanel = panel.Visible and panel or nil
+    end
+
+    -- Создание кнопок и фреймов для разделов
+    for i, section in ipairs(sections) do
+        -- Кнопка раздела
+        local button = Instance.new("TextButton")
+        button.Size = UDim2.new(0, 90, 0, 40)
+        button.Position = UDim2.new(0, 5, 0, (i-1) * 45 + 5)
+        button.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+        button.Text = section
+        button.TextColor3 = Color3.fromRGB(255, 206, 9)
+        button.TextSize = 18
+        button.Font = Enum.Font.Gotham
+        button.Parent = sectionPanel
+        
+        local buttonCorner = Instance.new("UICorner")
+        buttonCorner.CornerRadius = UDim.new(0, 6)
+        buttonCorner.Parent = button
+        
+        -- Эффект при наведении
+        button.MouseEnter:Connect(function()
+            game:GetService("TweenService"):Create(
+                button,
+                TweenInfo.new(0.2),
+                {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+            ):Play()
+        end)
+        button.MouseLeave:Connect(function()
+            game:GetService("TweenService"):Create(
+                button,
+                TweenInfo.new(0.2),
+                {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+            ):Play()
+        end)
+
+        -- Фрейм для раздела
+        local sectionFrame = Instance.new("Frame")
+        sectionFrame.Size = UDim2.new(1, 0, 1, 0)
+        sectionFrame.Position = UDim2.new(0, 0, 0, 0)
+        sectionFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        sectionFrame.BackgroundTransparency = 0.5
+        sectionFrame.Visible = false
+        sectionFrame.Parent = contentFrame
+        
+        local sectionFrameCorner = Instance.new("UICorner")
+        sectionFrameCorner.CornerRadius = UDim.new(0, 8)
+        sectionFrameCorner.Parent = sectionFrame
+
+        -- Контент для раздела Char
+        if section == "Char" then
+-- Кнопка Infinity Jump
+local infJumpButton = Instance.new("TextButton")
+infJumpButton.Size = UDim2.new(0, 150, 0, 40)
+infJumpButton.Position = UDim2.new(0, 200, 0, 140) -- Adjusted Y to place below Fling button
+infJumpButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+infJumpButton.Text = "Infinity Jump"
+infJumpButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+infJumpButton.TextSize = 18
+infJumpButton.Font = Enum.Font.Gotham
+infJumpButton.ZIndex = 1
+infJumpButton.Parent = sectionFrame
+
+local infJumpButtonCorner = Instance.new("UICorner")
+infJumpButtonCorner.CornerRadius = UDim.new(0, 6)
+infJumpButtonCorner.Parent = infJumpButton
+
+local infJumpPanel = Instance.new("Frame")
+infJumpPanel.Size = UDim2.new(0, 340, 0, 120)
+infJumpPanel.Position = UDim2.new(0, 200, 0, 180) -- Adjusted Y to align with button
+infJumpPanel.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+infJumpPanel.BackgroundTransparency = 0.3
+infJumpPanel.Visible = false
+infJumpPanel.ZIndex = 2
+infJumpPanel.Parent = sectionFrame
+
+local infJumpPanelCorner = Instance.new("UICorner")
+infJumpPanelCorner.CornerRadius = UDim.new(0, 8)
+infJumpPanelCorner.Parent = infJumpPanel
+
+for _, child in ipairs(infJumpPanel:GetDescendants()) do
+    if child:IsA("GuiObject") then
+        child.ZIndex = 2
+    end
+end
+
+local infJumpBindInput = Instance.new("TextBox")
+infJumpBindInput.Size = UDim2.new(0, 100, 0, 30)
+infJumpBindInput.Position = UDim2.new(0, 10, 0, 10)
+infJumpBindInput.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+infJumpBindInput.Text = "Space"
+infJumpBindInput.TextColor3 = Color3.fromRGB(255, 206, 9)
+infJumpBindInput.TextSize = 16
+infJumpBindInput.Font = Enum.Font.Gotham
+infJumpBindInput.PlaceholderText = "Bind Key"
+infJumpBindInput.ZIndex = 2
+infJumpBindInput.Parent = infJumpPanel
+
+local infJumpBindInputCorner = Instance.new("UICorner")
+infJumpBindInputCorner.CornerRadius = UDim.new(0, 6)
+infJumpBindInputCorner.Parent = infJumpBindInput
+
+local infJumpToggleButton = Instance.new("TextButton")
+infJumpToggleButton.Size = UDim2.new(0, 80, 0, 30)
+infJumpToggleButton.Position = UDim2.new(0, 10, 0, 50)
+infJumpToggleButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+infJumpToggleButton.Text = "Off"
+infJumpToggleButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+infJumpToggleButton.TextSize = 16
+infJumpToggleButton.Font = Enum.Font.Gotham
+infJumpToggleButton.ZIndex = 2
+infJumpToggleButton.Parent = infJumpPanel
+
+local infJumpToggleButtonCorner = Instance.new("UICorner")
+infJumpToggleButtonCorner.CornerRadius = UDim.new(0, 6)
+infJumpToggleButtonCorner.Parent = infJumpToggleButton
+
+-- Логика Infinity Jump
+local infJumpEnabled = false
+local jumpConnection
+local bindConnection
+local UserInputService = game:GetService("UserInputService")
+
+local function toggleInfJump()
+    infJumpEnabled = not infJumpEnabled
+    infJumpToggleButton.Text = infJumpEnabled and "On" or "Off"
+    infJumpToggleButton.BackgroundColor3 = infJumpEnabled and Color3.fromRGB(80, 120, 80) or Color3.fromRGB(23, 24, 30)
+
+    if infJumpEnabled then
+        if jumpConnection then
+            jumpConnection:Disconnect()
+        end
+        jumpConnection = UserInputService.JumpRequest:Connect(function()
+            local player = game.Players.LocalPlayer
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                local humanoid = player.Character.Humanoid
+                if humanoid:GetState() ~= Enum.HumanoidStateType.Jumping and humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                else
+                    local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+                    if rootPart then
+                        local bodyVelocity = Instance.new("BodyVelocity")
+                        bodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
+                        bodyVelocity.Velocity = Vector3.new(0, humanoid.JumpPower or 50, 0)
+                        bodyVelocity.Parent = rootPart
+                        game:GetService("Debris"):AddItem(bodyVelocity, 0.1) -- Remove after 0.1 seconds
+                    end
+                end
+            end
+        end)
+    else
+        if jumpConnection then
+            jumpConnection:Disconnect()
+            jumpConnection = nil
+        end
+    end
+end
+
+local function setupKeybind()
+    if bindConnection then
+        bindConnection:Disconnect()
+    end
+    local bindKey = infJumpBindInput.Text:upper()
+    local keyEnum
+    if bindKey == "t" then
+        keyEnum = Enum.KeyCode.T
+    else
+        local success, result = pcall(function()
+            return Enum.KeyCode[bindKey]
+        end)
+        if not success or not result then
+            warn("Invalid keybind: " .. bindKey)
+            infJumpBindInput.Text = "t"
+            keyEnum = Enum.KeyCode.T
+        else
+            keyEnum = result
+        end
+    end
+
+    bindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+        if not gameProcessedEvent and input.KeyCode == keyEnum then
+            toggleInfJump()
+        end
+    end)
+end
+
+infJumpButton.MouseButton1Click:Connect(function()
+    togglePanel(infJumpPanel, infJumpButton)
+end)
+
+infJumpToggleButton.MouseButton1Click:Connect(toggleInfJump)
+
+infJumpBindInput.FocusLost:Connect(function()
+    setupKeybind()
+end)
+
+-- Initialize keybind on script start
+setupKeybind()
+		
+-- Кнопка Bang
+local bangButton = Instance.new("TextButton")
+bangButton.Size = UDim2.new(0, 150, 0, 40)
+bangButton.Position = UDim2.new(0, 200, 0, 80)
+bangButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+bangButton.Text = "Chase"
+bangButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+bangButton.TextSize = 18
+bangButton.Font = Enum.Font.Gotham
+bangButton.ZIndex = 1
+bangButton.Parent = sectionFrame
+
+local bangButtonCorner = Instance.new("UICorner")
+bangButtonCorner.CornerRadius = UDim.new(0, 6)
+bangButtonCorner.Parent = bangButton
+
+local bangPanel = Instance.new("Frame")
+bangPanel.Size = UDim2.new(0, 340, 0, 120)
+bangPanel.Position = UDim2.new(0, 200, 0, 120)
+bangPanel.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+bangPanel.BackgroundTransparency = 0.3
+bangPanel.Visible = false
+bangPanel.ZIndex = 2
+bangPanel.Parent = sectionFrame
+
+local bangPanelCorner = Instance.new("UICorner")
+bangPanelCorner.CornerRadius = UDim.new(0, 8)
+bangPanelCorner.Parent = bangPanel
+
+for _, child in ipairs(bangPanel:GetDescendants()) do
+    if child:IsA("GuiObject") then
+        child.ZIndex = 2
+    end
+end
+
+local bangActionButton = Instance.new("TextButton")
+bangActionButton.Size = UDim2.new(0, 80, 0, 30)
+bangActionButton.Position = UDim2.new(0, 10, 0, 10)
+bangActionButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+bangActionButton.Text = "Chase"
+bangActionButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+bangActionButton.TextSize = 16
+bangActionButton.Font = Enum.Font.Gotham
+bangActionButton.ZIndex = 2
+bangActionButton.Parent = bangPanel
+
+local bangActionButtonCorner = Instance.new("UICorner")
+bangActionButtonCorner.CornerRadius = UDim.new(0, 6)
+bangActionButtonCorner.Parent = bangActionButton
+
+local bangPlayerInput = Instance.new("TextBox")
+bangPlayerInput.Size = UDim2.new(0, 150, 0, 30)
+bangPlayerInput.Position = UDim2.new(0, 10, 0, 50)
+bangPlayerInput.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+bangPlayerInput.Text = ""
+bangPlayerInput.TextColor3 = Color3.fromRGB(255, 206, 9)
+bangPlayerInput.TextSize = 16
+bangPlayerInput.Font = Enum.Font.Gotham
+bangPlayerInput.PlaceholderText = "Player Name"
+bangPlayerInput.ZIndex = 2
+bangPlayerInput.Parent = bangPanel
+
+local bangPlayerInputCorner = Instance.new("UICorner")
+bangPlayerInputCorner.CornerRadius = UDim.new(0, 6)
+bangPlayerInputCorner.Parent = bangPlayerInput
+
+local bangOffButton = Instance.new("TextButton")
+bangOffButton.Size = UDim2.new(0, 80, 0, 30)
+bangOffButton.Position = UDim2.new(0, 250, 0, 10)
+bangOffButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+bangOffButton.Text = "Off"
+bangOffButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+bangOffButton.TextSize = 16
+bangOffButton.Font = Enum.Font.Gotham
+bangOffButton.ZIndex = 2
+bangOffButton.Parent = bangPanel
+
+local bangOffButtonCorner = Instance.new("UICorner")
+bangOffButtonCorner.CornerRadius = UDim.new(0, 6)
+bangOffButtonCorner.Parent = bangOffButton
+
+-- Логика Bang
+local bangEnabled = false
+local bangConnection
+local animationTrack
+
+local function stopBang()
+    bangEnabled = false
+    if bangConnection then
+        bangConnection:Disconnect()
+        bangConnection = nil
+    end
+    if animationTrack then
+        animationTrack:Stop()
+        animationTrack = nil
+    end
+    local player = game.Players.LocalPlayer
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = 16
+    end
+    bangActionButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+end
+
+local function startBang(playerName)
+    stopBang() -- Остановить предыдущую анимацию, если есть
+    local localPlayer = game.Players.LocalPlayer
+    if not localPlayer.Character or not localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        return
+    end
+
+    local targetPlayer
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player.Name:lower():find(playerName:lower()) then
+            targetPlayer = player
+            break
+        end
+    end
+
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        bangEnabled = true
+        bangActionButton.BackgroundColor3 = Color3.fromRGB(80, 120, 80)
+
+        -- Загрузка анимации
+        local animation = Instance.new("Animation")
+        animation.AnimationId = "rbxassetid://507771019" -- Публичная анимация (Dance)
+        local humanoid = localPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+            local success, err = pcall(function()
+                animationTrack = animator:LoadAnimation(animation)
+                animationTrack:Play()
+            end)
+            if not success then
+                warn("Failed to load or play animation: " .. tostring(err))
+            end
+        else
+            warn("No Humanoid found in local player's character")
+        end
+
+        bangConnection = game:GetService("RunService").RenderStepped:Connect(function()
+            if not bangEnabled or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") or not localPlayer.Character or not localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                stopBang()
+                return
+            end
+
+            -- Телепортация за спину игрока
+            local targetPos = targetPlayer.Character.HumanoidRootPart.Position
+            local offset = targetPlayer.Character.HumanoidRootPart.CFrame.LookVector * -3 -- Позиция за спиной на расстоянии 3
+            local newPos = targetPos + offset
+            localPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(newPos, targetPos)
+
+            -- Установка скорости передвижения, чтобы не отставать
+            local humanoid = localPlayer.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = targetPlayer.Character.Humanoid.WalkSpeed
+            end
+        end)
+    else
+        warn("Target player not found or invalid")
+    end
+end
+
+bangButton.MouseButton1Click:Connect(function()
+    togglePanel(bangPanel, bangButton)
+end)
+
+bangActionButton.MouseButton1Click:Connect(function()
+    local playerName = bangPlayerInput.Text
+    if playerName ~= "" then
+        startBang(playerName)
+    else
+        warn("Player name is empty")
+    end
+end)
+
+bangOffButton.MouseButton1Click:Connect(stopBang)
+
+            -- Кнопка Walk Speed
+            local walkSpeedButton = Instance.new("TextButton")
+            walkSpeedButton.Size = UDim2.new(0, 150, 0, 40)
+            walkSpeedButton.Position = UDim2.new(0, 20, 0, 20)
+            walkSpeedButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            walkSpeedButton.Text = "Walk Speed"
+            walkSpeedButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            walkSpeedButton.TextSize = 18
+            walkSpeedButton.Font = Enum.Font.Gotham
+            walkSpeedButton.ZIndex = 1
+            walkSpeedButton.Parent = sectionFrame
+            
+            local walkSpeedCorner = Instance.new("UICorner")
+            walkSpeedCorner.CornerRadius = UDim.new(0, 6)
+            walkSpeedCorner.Parent = walkSpeedButton
+
+            local speedPanel = Instance.new("Frame")
+            speedPanel.Size = UDim2.new(0, 340, 0, 120)
+            speedPanel.Position = UDim2.new(0, 20, 0, 60)
+            speedPanel.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+            speedPanel.BackgroundTransparency = 0.3
+            speedPanel.Visible = false
+            speedPanel.ZIndex = 2
+            speedPanel.Parent = sectionFrame
+            
+            local speedPanelCorner = Instance.new("UICorner")
+            speedPanelCorner.CornerRadius = UDim.new(0, 8)
+            speedPanelCorner.Parent = speedPanel
+
+            for _, child in ipairs(speedPanel:GetDescendants()) do
+                if child:IsA("GuiObject") then
+                    child.ZIndex = 2
+                end
+            end
+
+            local speedInput = Instance.new("TextBox")
+            speedInput.Size = UDim2.new(0, 100, 0, 30)
+            speedInput.Position = UDim2.new(0, 10, 0, 10)
+            speedInput.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            speedInput.Text = "16"
+            speedInput.TextColor3 = Color3.fromRGB(255, 206, 9)
+            speedInput.TextSize = 16
+            speedInput.Font = Enum.Font.Gotham
+            speedInput.PlaceholderText = "Speed"
+            speedInput.ZIndex = 2
+            speedInput.Parent = speedPanel
+            
+            local speedInputCorner = Instance.new("UICorner")
+            speedInputCorner.CornerRadius = UDim.new(0, 6)
+            speedInputCorner.Parent = speedInput
+
+            local bindInput = Instance.new("TextBox")
+            bindInput.Size = UDim2.new(0, 100, 0, 30)
+            bindInput.Position = UDim2.new(0, 10, 0, 50)
+            bindInput.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            bindInput.Text = "E"
+            bindInput.TextColor3 = Color3.fromRGB(255, 206, 9)
+            bindInput.TextSize = 16
+            bindInput.Font = Enum.Font.Gotham
+            bindInput.PlaceholderText = "Bind Key"
+            bindInput.ZIndex = 2
+            bindInput.Parent = speedPanel
+            
+            local bindInputCorner = Instance.new("UICorner")
+            bindInputCorner.CornerRadius = UDim.new(0, 6)
+            bindInputCorner.Parent = bindInput
+
+            local offButton = Instance.new("TextButton")
+            offButton.Size = UDim2.new(0, 80, 0, 30)
+            offButton.Position = UDim2.new(0, 250, 0, 10)
+            offButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            offButton.Text = "Off"
+            offButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            offButton.TextSize = 16
+            offButton.Font = Enum.Font.Gotham
+            offButton.ZIndex = 2
+            offButton.Parent = speedPanel
+            
+            local offButtonCorner = Instance.new("UICorner")
+            offButtonCorner.CornerRadius = UDim.new(0, 6)
+            offButtonCorner.Parent = offButton
+
+            -- Кнопка NoClip
+            local noClipButton = Instance.new("TextButton")
+            noClipButton.Size = UDim2.new(0, 150, 0, 40)
+            noClipButton.Position = UDim2.new(0, 20, 0, 80)
+            noClipButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            noClipButton.Text = "NoClip"
+            noClipButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            noClipButton.TextSize = 18
+            noClipButton.Font = Enum.Font.Gotham
+            noClipButton.ZIndex = 1
+            noClipButton.Parent = sectionFrame
+            
+            local noClipButtonCorner = Instance.new("UICorner")
+            noClipButtonCorner.CornerRadius = UDim.new(0, 6)
+            noClipButtonCorner.Parent = noClipButton
+
+            local noClipPanel = Instance.new("Frame")
+            noClipPanel.Size = UDim2.new(0, 340, 0, 120)
+            noClipPanel.Position = UDim2.new(0, 20, 0, 120)
+            noClipPanel.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            noClipPanel.BackgroundTransparency = 0.3
+            noClipPanel.Visible = false
+            noClipPanel.ZIndex = 2
+            noClipPanel.Parent = sectionFrame
+            
+            local noClipPanelCorner = Instance.new("UICorner")
+            noClipPanelCorner.CornerRadius = UDim.new(0, 8)
+            noClipPanelCorner.Parent = noClipPanel
+
+            for _, child in ipairs(noClipPanel:GetDescendants()) do
+                if child:IsA("GuiObject") then
+                    child.ZIndex = 2
+                end
+            end
+
+            local noClipToggleButton = Instance.new("TextButton")
+            noClipToggleButton.Size = UDim2.new(0, 80, 0, 30)
+            noClipToggleButton.Position = UDim2.new(0, 10, 0, 10)
+            noClipToggleButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            noClipToggleButton.Text = "Off"
+            noClipToggleButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            noClipToggleButton.TextSize = 16
+            noClipToggleButton.Font = Enum.Font.Gotham
+            noClipToggleButton.ZIndex = 2
+            noClipToggleButton.Parent = noClipPanel
+            
+            local noClipToggleCorner = Instance.new("UICorner")
+            noClipToggleCorner.CornerRadius = UDim.new(0, 6)
+            noClipToggleCorner.Parent = noClipToggleButton
+
+            local noClipBindInput = Instance.new("TextBox")
+            noClipBindInput.Size = UDim2.new(0, 100, 0, 30)
+            noClipBindInput.Position = UDim2.new(0, 10, 0, 50)
+            noClipBindInput.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            noClipBindInput.Text = "Q"
+            noClipBindInput.TextColor3 = Color3.fromRGB(255, 206, 9)
+            noClipBindInput.TextSize = 16
+            noClipBindInput.Font = Enum.Font.Gotham
+            noClipBindInput.PlaceholderText = "Bind Key"
+            noClipBindInput.ZIndex = 2
+            noClipBindInput.Parent = noClipPanel
+            
+            local noClipBindInputCorner = Instance.new("UICorner")
+            noClipBindInputCorner.CornerRadius = UDim.new(0, 6)
+            noClipBindInputCorner.Parent = noClipBindInput
+
+            -- Кнопка Teleport
+            local teleportButton = Instance.new("TextButton")
+            teleportButton.Size = UDim2.new(0, 150, 0, 40)
+            teleportButton.Position = UDim2.new(0, 20, 0, 140)
+            teleportButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            teleportButton.Text = "Teleport"
+            teleportButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            teleportButton.TextSize = 18
+            teleportButton.Font = Enum.Font.Gotham
+            teleportButton.ZIndex = 1
+            teleportButton.Parent = sectionFrame
+            
+            local teleportButtonCorner = Instance.new("UICorner")
+            teleportButtonCorner.CornerRadius = UDim.new(0, 6)
+            teleportButtonCorner.Parent = teleportButton
+
+            local teleportPanel = Instance.new("Frame")
+            teleportPanel.Size = UDim2.new(0, 340, 0, 120)
+            teleportPanel.Position = UDim2.new(0, 20, 0, 180)
+            teleportPanel.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            teleportPanel.BackgroundTransparency = 0.3
+            teleportPanel.Visible = false
+            teleportPanel.ZIndex = 2
+            teleportPanel.Parent = sectionFrame
+            
+            local teleportPanelCorner = Instance.new("UICorner")
+            teleportPanelCorner.CornerRadius = UDim.new(0, 8)
+            teleportPanelCorner.Parent = teleportPanel
+
+            for _, child in ipairs(teleportPanel:GetDescendants()) do
+                if child:IsA("GuiObject") then
+                    child.ZIndex = 2
+                end
+            end
+
+            local playerNameInput = Instance.new("TextBox")
+            playerNameInput.Size = UDim2.new(0, 150, 0, 30)
+            playerNameInput.Position = UDim2.new(0, 10, 0, 10)
+            playerNameInput.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            playerNameInput.Text = ""
+            playerNameInput.TextColor3 = Color3.fromRGB(255, 206, 9)
+            playerNameInput.TextSize = 16
+            playerNameInput.Font = Enum.Font.Gotham
+            playerNameInput.PlaceholderText = "Player Name"
+            playerNameInput.ZIndex = 2
+            playerNameInput.Parent = teleportPanel
+            
+            local playerNameInputCorner = Instance.new("UICorner")
+            playerNameInputCorner.CornerRadius = UDim.new(0, 6)
+            playerNameInputCorner.Parent = playerNameInput
+
+            local tpButton = Instance.new("TextButton")
+            tpButton.Size = UDim2.new(0, 80, 0, 30)
+            tpButton.Position = UDim2.new(0, 10, 0, 50)
+            tpButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            tpButton.Text = "TP"
+            tpButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            tpButton.TextSize = 16
+            tpButton.Font = Enum.Font.Gotham
+            tpButton.ZIndex = 2
+            tpButton.Parent = teleportPanel
+            
+            local tpButtonCorner = Instance.new("UICorner")
+            tpButtonCorner.CornerRadius = UDim.new(0, 6)
+            tpButtonCorner.Parent = tpButton
+
+            -- Кнопка Fly
+            local flyButton = Instance.new("TextButton")
+            flyButton.Size = UDim2.new(0, 150, 0, 40)
+            flyButton.Position = UDim2.new(0, 20, 0, 200)
+            flyButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            flyButton.Text = "Fly"
+            flyButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            flyButton.TextSize = 18
+            flyButton.Font = Enum.Font.Gotham
+            flyButton.ZIndex = 1
+            flyButton.Parent = sectionFrame
+            
+            local flyButtonCorner = Instance.new("UICorner")
+            flyButtonCorner.CornerRadius = UDim.new(0, 6)
+            flyButtonCorner.Parent = flyButton
+
+            local flyPanel = Instance.new("Frame")
+            flyPanel.Size = UDim2.new(0, 340, 0, 120)
+            flyPanel.Position = UDim2.new(0, 20, 0, 240)
+            flyPanel.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            flyPanel.BackgroundTransparency = 0.3
+            flyPanel.Visible = false
+            flyPanel.ZIndex = 2
+            flyPanel.Parent = sectionFrame
+            
+            local flyPanelCorner = Instance.new("UICorner")
+            flyPanelCorner.CornerRadius = UDim.new(0, 8)
+            flyPanelCorner.Parent = flyPanel
+
+            for _, child in ipairs(flyPanel:GetDescendants()) do
+                if child:IsA("GuiObject") then
+                    child.ZIndex = 2
+                end
+            end
+
+            local flySpeedInput = Instance.new("TextBox")
+            flySpeedInput.Size = UDim2.new(0, 100, 0, 30)
+            flySpeedInput.Position = UDim2.new(0, 10, 0, 10)
+            flySpeedInput.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            flySpeedInput.Text = "50"
+            flySpeedInput.TextColor3 = Color3.fromRGB(255, 206, 9)
+            flySpeedInput.TextSize = 16
+            flySpeedInput.Font = Enum.Font.Gotham
+            flySpeedInput.PlaceholderText = "Fly Speed"
+            flySpeedInput.ZIndex = 2
+            flySpeedInput.Parent = flyPanel
+            
+            local flySpeedInputCorner = Instance.new("UICorner")
+            flySpeedInputCorner.CornerRadius = UDim.new(0, 6)
+            flySpeedInputCorner.Parent = flySpeedInput
+
+            local flyBindInput = Instance.new("TextBox")
+            flyBindInput.Size = UDim2.new(0, 100, 0, 30)
+            flyBindInput.Position = UDim2.new(0, 10, 0, 50)
+            flyBindInput.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            flyBindInput.Text = "F"
+            flyBindInput.TextColor3 = Color3.fromRGB(255, 206, 9)
+            flyBindInput.TextSize = 16
+            flyBindInput.Font = Enum.Font.Gotham
+            flyBindInput.PlaceholderText = "Bind Key"
+            flyBindInput.ZIndex = 2
+            flyBindInput.Parent = flyPanel
+            
+            local flyBindInputCorner = Instance.new("UICorner")
+            flyBindInputCorner.CornerRadius = UDim.new(0, 6)
+            flyBindInputCorner.Parent = flyBindInput
+
+            local flyToggleButton = Instance.new("TextButton")
+            flyToggleButton.Size = UDim2.new(0, 80, 0, 30)
+            flyToggleButton.Position = UDim2.new(0, 250, 0, 10)
+            flyToggleButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            flyToggleButton.Text = "Off"
+            flyToggleButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            flyToggleButton.TextSize = 16
+            flyToggleButton.Font = Enum.Font.Gotham
+            flyToggleButton.ZIndex = 2
+            flyToggleButton.Parent = flyPanel
+            
+            local flyToggleCorner = Instance.new("UICorner")
+            flyToggleCorner.CornerRadius = UDim.new(0, 6)
+            flyToggleCorner.Parent = flyToggleButton
+
+            -- Кнопка Anim-Scripts
+            local animScriptsButton = Instance.new("TextButton")
+            animScriptsButton.Size = UDim2.new(0, 150, 0, 40)
+            animScriptsButton.Position = UDim2.new(0, 200, 0, 20)
+            animScriptsButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            animScriptsButton.Text = "Anim-Scripts"
+            animScriptsButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            animScriptsButton.TextSize = 18
+            animScriptsButton.Font = Enum.Font.Gotham
+            animScriptsButton.ZIndex = 1
+            animScriptsButton.Parent = sectionFrame
+            
+            local animScriptsButtonCorner = Instance.new("UICorner")
+            animScriptsButtonCorner.CornerRadius = UDim.new(0, 6)
+            animScriptsButtonCorner.Parent = animScriptsButton
+
+            local animScriptsPanel = Instance.new("Frame")
+            animScriptsPanel.Size = UDim2.new(0, 340, 0, 120)
+            animScriptsPanel.Position = UDim2.new(0, 200, 0, 60)
+            animScriptsPanel.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            animScriptsPanel.BackgroundTransparency = 0.3
+            animScriptsPanel.Visible = false
+            animScriptsPanel.ZIndex = 2
+            animScriptsPanel.Parent = sectionFrame
+            
+            local animScriptsPanelCorner = Instance.new("UICorner")
+            animScriptsPanelCorner.CornerRadius = UDim.new(0, 8)
+            animScriptsPanelCorner.Parent = animScriptsPanel
+
+            for _, child in ipairs(animScriptsPanel:GetDescendants()) do
+                if child:IsA("GuiObject") then
+                    child.ZIndex = 2
+                end
+            end
+
+            local aquaMatrixButton = Instance.new("TextButton")
+            aquaMatrixButton.Size = UDim2.new(0, 150, 0, 40)
+            aquaMatrixButton.Position = UDim2.new(0, 10, 0, 10)
+            aquaMatrixButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            aquaMatrixButton.Text = "AquaMatrix"
+            aquaMatrixButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            aquaMatrixButton.TextSize = 18
+            aquaMatrixButton.Font = Enum.Font.Gotham
+            aquaMatrixButton.ZIndex = 2
+            aquaMatrixButton.Parent = animScriptsPanel
+            
+            local aquaMatrixButtonCorner = Instance.new("UICorner")
+            aquaMatrixButtonCorner.CornerRadius = UDim.new(0, 6)
+            aquaMatrixButtonCorner.Parent = aquaMatrixButton
+
+            -- Логика для кнопок
+            walkSpeedButton.MouseButton1Click:Connect(function()
+                togglePanel(speedPanel, walkSpeedButton)
+            end)
+
+            noClipButton.MouseButton1Click:Connect(function()
+                togglePanel(noClipPanel, noClipButton)
+            end)
+
+            teleportButton.MouseButton1Click:Connect(function()
+                togglePanel(teleportPanel, teleportButton)
+            end)
+
+            flyButton.MouseButton1Click:Connect(function()
+                togglePanel(flyPanel, flyButton)
+            end)
+
+            animScriptsButton.MouseButton1Click:Connect(function()
+                togglePanel(animScriptsPanel, animScriptsButton)
+            end)
+
+            aquaMatrixButton.MouseButton1Click:Connect(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ExploitFin/AquaMatrix/refs/heads/AquaMatrix/AquaMatrix"))()
+            end)
+
+            -- Логика Walk Speed
+            local function applySpeed()
+                local player = game.Players.LocalPlayer
+                local speed = tonumber(speedInput.Text)
+                if player.Character and player.Character:FindFirstChild("Humanoid") and speed then
+                    player.Character.Humanoid.WalkSpeed = speed
+                end
+            end
+
+            offButton.MouseButton1Click:Connect(function()
+                local player = game.Players.LocalPlayer
+                if player.Character and player.Character:FindFirstChild("Humanoid") then
+                    player.Character.Humanoid.WalkSpeed = 16
+                    speedInput.Text = "16"
+                end
+            end)
+
+            local UserInputService = game:GetService("UserInputService")
+            local speedBind = Enum.KeyCode.E
+            bindInput.FocusLost:Connect(function()
+                local key = bindInput.Text:upper()
+                if Enum.KeyCode[key] then
+                    speedBind = Enum.KeyCode[key]
+                else
+                    bindInput.Text = speedBind.Name
+                end
+            end)
+
+            UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                if not gameProcessed and input.KeyCode == speedBind then
+                    applySpeed()
+                end
+            end)
+
+            -- Логика NoClip
+            local noClipEnabled = false
+            local noClipConnection
+
+            local function setNoClip(enabled)
+                local player = game.Players.LocalPlayer
+                noClipEnabled = enabled
+                noClipToggleButton.Text = enabled and "On" or "Off"
+                noClipToggleButton.BackgroundColor3 = enabled and Color3.fromRGB(80, 120, 80) or Color3.fromRGB(120, 60, 60)
+
+                if noClipConnection then
+                    noClipConnection:Disconnect()
+                    noClipConnection = nil
+                end
+
+                if enabled then
+                    noClipConnection = game:GetService("RunService").Stepped:Connect(function()
+                        if player.Character then
+                            for _, part in ipairs(player.Character:GetDescendants()) do
+                                if part:IsA("BasePart") then
+                                    part.CanCollide = false
+                                end
+                            end
+                        end
+                    end)
+                else
+                    if player.Character then
+                        for _, part in ipairs(player.Character:GetDescendants()) do
+                            if part:IsA("BasePart") then
+                                part.CanCollide = true
+                            end
+                        end
+                    end
+                end
+            end
+
+            game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+                if noClipEnabled then
+                    setNoClip(true)
+                end
+            end)
+
+            noClipToggleButton.MouseButton1Click:Connect(function()
+                setNoClip(not noClipEnabled)
+            end)
+
+            local noClipBind = Enum.KeyCode.Q
+            noClipBindInput.FocusLost:Connect(function()
+                local key = noClipBindInput.Text:upper()
+                if Enum.KeyCode[key] then
+                    noClipBind = Enum.KeyCode[key]
+                else
+                    noClipBindInput.Text = noClipBind.Name
+                end
+            end)
+
+            UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                if not gameProcessed and input.KeyCode == noClipBind then
+                    setNoClip(not noClipEnabled)
+                end
+            end)
+
+            -- Логика телепортации
+            local function teleportToPlayer(playerName)
+                local localPlayer = game.Players.LocalPlayer
+                if not localPlayer.Character or not localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    return
+                end
+
+                local targetPlayer
+                for _, player in ipairs(game.Players:GetPlayers()) do
+                    if player.Name:lower():find(playerName:lower()) then
+                        targetPlayer = player
+                        break
+                    end
+                end
+
+                if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    localPlayer.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
+                end
+            end
+
+            tpButton.MouseButton1Click:Connect(function()
+                local playerName = playerNameInput.Text
+                if playerName ~= "" then
+                    teleportToPlayer(playerName)
+                end
+            end)
+
+            -- Логика Fly
+            local flyEnabled = false
+            local flyConnection
+            local flySpeed = 50
+
+            local function setFly(enabled)
+                local player = game.Players.LocalPlayer
+                flyEnabled = enabled
+                flyToggleButton.Text = enabled and "On" or "Off"
+                flyToggleButton.BackgroundColor3 = enabled and Color3.fromRGB(80, 120, 80) or Color3.fromRGB(120, 60, 60)
+
+                if flyConnection then
+                    flyConnection:Disconnect()
+                    flyConnection = nil
+                end
+
+                if enabled then
+                    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local humanoid = player.Character.Humanoid
+                        local rootPart = player.Character.HumanoidRootPart
+                        humanoid.PlatformStand = true
+
+                        local bodyVelocity = Instance.new("BodyVelocity")
+                        bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                        bodyVelocity.Parent = rootPart
+                        bodyVelocity.Name = "FlyVelocity"
+
+                        local function updateFlySpeed()
+                            local newSpeed = tonumber(flySpeedInput.Text)
+                            if newSpeed then
+                                flySpeed = newSpeed
+                            else
+                                flySpeedInput.Text = tostring(flySpeed)
+                            end
+                        end
+
+                        updateFlySpeed()
+                        flyConnection = game:GetService("RunService").RenderStepped:Connect(function()
+                            if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+                                setFly(false)
+                                return
+                            end
+
+                            local camera = game.Workspace.CurrentCamera
+                            local moveDirection = Vector3.new(0, 0, 0)
+                            local input = UserInputService:GetKeysPressed()
+
+                            for _, key in ipairs(input) do
+                                if key.KeyCode == Enum.KeyCode.W then
+                                    moveDirection = moveDirection + camera.CFrame.LookVector
+                                end
+                                if key.KeyCode == Enum.KeyCode.S then
+                                    moveDirection = moveDirection - camera.CFrame.LookVector
+                                end
+                                if key.KeyCode == Enum.KeyCode.A then
+                                    moveDirection = moveDirection - camera.CFrame.RightVector
+                                end
+                                if key.KeyCode == Enum.KeyCode.D then
+                                    moveDirection = moveDirection + camera.CFrame.RightVector
+                                end
+                                if key.KeyCode == Enum.KeyCode.Space then
+                                    moveDirection = moveDirection + Vector3.new(0, 1, 0)
+                                end
+                                if key.KeyCode == Enum.KeyCode.LeftShift then
+                                    moveDirection = moveDirection - Vector3.new(0, 1, 0)
+                                end
+                            end
+
+                            if moveDirection.Magnitude > 0 then
+                                moveDirection = moveDirection.Unit * flySpeed
+                            end
+                            bodyVelocity.Velocity = moveDirection
+                        end)
+
+                        flySpeedInput.FocusLost:Connect(updateFlySpeed)
+                    end
+                else
+                    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local humanoid = player.Character.Humanoid
+                        local rootPart = player.Character.HumanoidRootPart
+                        humanoid.PlatformStand = false
+                        local bodyVelocity = rootPart:FindFirstChild("FlyVelocity")
+                        if bodyVelocity then
+                            bodyVelocity:Destroy()
+                        end
+                    end
+                end
+            end
+
+            game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+                if flyEnabled then
+                    setFly(true)
+                end
+            end)
+
+            flyToggleButton.MouseButton1Click:Connect(function()
+                setFly(not flyEnabled)
+            end)
+
+            local flyBind = Enum.KeyCode.F
+            flyBindInput.FocusLost:Connect(function()
+                local key = flyBindInput.Text:upper()
+                if Enum.KeyCode[key] then
+                    flyBind = Enum.KeyCode[key]
+                else
+                    flyBindInput.Text = flyBind.Name
+                end
+            end)
+
+            UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                if not gameProcessed and input.KeyCode == flyBind then
+                    setFly(not flyEnabled)
+                end
+            end)
+
+        elseif section == "Discord" then
+            -- Кнопка Copy Link
+            local copyLinkButton = Instance.new("TextButton")
+            copyLinkButton.Size = UDim2.new(0, 150, 0, 40)
+            copyLinkButton.Position = UDim2.new(0, 20, 0, 20)
+            copyLinkButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            copyLinkButton.Text = "Copy Discord Link"
+            copyLinkButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            copyLinkButton.TextSize = 18
+            copyLinkButton.Font = Enum.Font.Gotham
+            copyLinkButton.ZIndex = 1
+            copyLinkButton.Parent = sectionFrame
+            
+            local copyLinkButtonCorner = Instance.new("UICorner")
+            copyLinkButtonCorner.CornerRadius = UDim.new(0, 6)
+            copyLinkButtonCorner.Parent = copyLinkButton
+
+            -- Эффект при наведении
+            copyLinkButton.MouseEnter:Connect(function()
+                game:GetService("TweenService"):Create(
+                    copyLinkButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+                ):Play()
+            end)
+            copyLinkButton.MouseLeave:Connect(function()
+                game:GetService("TweenService"):Create(
+                    copyLinkButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+                ):Play()
+            end)
+
+            -- Логика копирования ссылки
+            copyLinkButton.MouseButton1Click:Connect(function()
+                pcall(function()
+                    setclipboard("https://discord.gg/hnubwnsyz6")
+                    copyLinkButton.Text = "Copied!"
+                    wait(1)
+                    copyLinkButton.Text = "Copy Discord Link"
+                end)
+            end)
+
+        elseif section == "Visual" then
+            -- Кнопка ESP
+            local espButton = Instance.new("TextButton")
+            espButton.Size = UDim2.new(0, 150, 0, 40)
+            espButton.Position = UDim2.new(0, 20, 0, 20)
+            espButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            espButton.Text = "ESP"
+            espButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            espButton.TextSize = 18
+            espButton.Font = Enum.Font.Gotham
+            espButton.ZIndex = 1
+            espButton.Parent = sectionFrame
+            
+            local espButtonCorner = Instance.new("UICorner")
+            espButtonCorner.CornerRadius = UDim.new(0, 6)
+            espButtonCorner.Parent = espButton
+
+            local espPanel = Instance.new("Frame")
+            espPanel.Size = UDim2.new(0, 340, 0, 120)
+            espPanel.Position = UDim2.new(0, 20, 0, 60)
+            espPanel.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+            espPanel.BackgroundTransparency = 0.3
+            espPanel.Visible = false
+            espPanel.ZIndex = 2
+            espPanel.Parent = sectionFrame
+            
+            local espPanelCorner = Instance.new("UICorner")
+            espPanelCorner.CornerRadius = UDim.new(0, 8)
+            espPanelCorner.Parent = espPanel
+
+            for _, child in ipairs(espPanel:GetDescendants()) do
+                if child:IsA("GuiObject") then
+                    child.ZIndex = 2
+                end
+            end
+
+            local espToggleButton = Instance.new("TextButton")
+            espToggleButton.Size = UDim2.new(0, 80, 0, 30)
+            espToggleButton.Position = UDim2.new(0, 10, 0, 10)
+            espToggleButton.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+            espToggleButton.Text = "Off"
+            espToggleButton.TextColor3 = Color3.fromRGB(23, 24, 30)
+            espToggleButton.TextSize = 16
+            espToggleButton.Font = Enum.Font.Gotham
+            espToggleButton.ZIndex = 2
+            espToggleButton.Parent = espPanel
+            
+            local espToggleCorner = Instance.new("UICorner")
+            espToggleCorner.CornerRadius = UDim.new(0, 6)
+            espToggleCorner.Parent = espToggleButton
+
+            local espBindInput = Instance.new("TextBox")
+            espBindInput.Size = UDim2.new(0, 100, 0, 30)
+            espBindInput.Position = UDim2.new(0, 10, 0, 50)
+            espBindInput.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+            espBindInput.Text = "Z"
+            espBindInput.TextColor3 = Color3.fromRGB(23, 24, 30)
+            espBindInput.TextSize = 16
+            espBindInput.Font = Enum.Font.Gotham
+            espBindInput.PlaceholderText = "Bind Key"
+            espBindInput.ZIndex = 2
+            espBindInput.Parent = espPanel
+            
+            local espBindInputCorner = Instance.new("UICorner")
+            espBindInputCorner.CornerRadius = UDim.new(0, 6)
+            espBindInputCorner.Parent = espBindInput
+
+            -- Логика ESP
+            local espEnabled = false
+            local espConnections = {}
+            local espHighlights = {}
+
+            local function setESP(enabled)
+                espEnabled = enabled
+                espToggleButton.Text = enabled and "On" or "Off"
+                espToggleButton.BackgroundColor3 = enabled and Color3.fromRGB(80, 120, 80) or Color3.fromRGB(120, 60, 60)
+
+                for _, highlight in pairs(espHighlights) do
+                    highlight:Destroy()
+                end
+                espHighlights = {}
+
+                for _, connection in pairs(espConnections) do
+                    connection:Disconnect()
+                end
+                espConnections = {}
+
+                if enabled then
+                    local function addESP(player)
+                        if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                            local highlight = Instance.new("Highlight")
+                            highlight.FillColor = player.TeamColor.Color
+                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                            highlight.FillTransparency = 0.5
+                            highlight.OutlineTransparency = 0
+                            highlight.Adornee = player.Character
+                            highlight.Parent = player.Character
+                            espHighlights[player] = highlight
+
+                            local teamConnection
+                            teamConnection = player:GetPropertyChangedSignal("Team"):Connect(function()
+                                if espHighlights[player] then
+                                    espHighlights[player].FillColor = player.TeamColor.Color
+                                end
+                            end)
+                            table.insert(espConnections, teamConnection)
+                        end
+                    end
+
+                    for _, player in ipairs(game.Players:GetPlayers()) do
+                        addESP(player)
+                    end
+
+                    table.insert(espConnections, game.Players.PlayerAdded:Connect(function(player)
+                        player.CharacterAdded:Connect(function()
+                            addESP(player)
+                        end)
+                    end))
+
+                    for _, player in ipairs(game.Players:GetPlayers()) do
+                        if player ~= game.Players.LocalPlayer then
+                            table.insert(espConnections, player.CharacterAdded:Connect(function()
+                                addESP(player)
+                            end))
+                        end
+                    end
+                end
+            end
+
+            game.Players.LocalPlayer.CharacterAdded:Connect(function()
+                if espEnabled then
+                    setESP(true)
+                end
+            end)
+
+            espToggleButton.MouseButton1Click:Connect(function()
+                setESP(not espEnabled)
+            end)
+
+            local espBind = Enum.KeyCode.Z
+            espBindInput.FocusLost:Connect(function()
+                local key = espBindInput.Text:upper()
+                if Enum.KeyCode[key] then
+                    espBind = Enum.KeyCode[key]
+                else
+                    espBindInput.Text = espBind.Name
+                end
+            end)
+
+            local UserInputService = game:GetService("UserInputService")
+            UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                if not gameProcessed and input.KeyCode == espBind then
+                    setESP(not espEnabled)
+                end
+            end)
+
+            espButton.MouseButton1Click:Connect(function()
+                togglePanel(espPanel, espButton)
+            end)
+
+            -- Кнопка Hitbox
+            local hitboxButton = Instance.new("TextButton")
+            hitboxButton.Size = UDim2.new(0, 150, 0, 40)
+            hitboxButton.Position = UDim2.new(0, 20, 0, 80)
+            hitboxButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            hitboxButton.Text = "Hitbox"
+            hitboxButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            hitboxButton.TextSize = 18
+            hitboxButton.Font = Enum.Font.Gotham
+            hitboxButton.ZIndex = 1
+            hitboxButton.Parent = sectionFrame
+            
+            local hitboxButtonCorner = Instance.new("UICorner")
+            hitboxButtonCorner.CornerRadius = UDim.new(0, 6)
+            hitboxButtonCorner.Parent = hitboxButton
+
+            local hitboxPanel = Instance.new("Frame")
+            hitboxPanel.Size = UDim2.new(0, 340, 0, 120)
+            hitboxPanel.Position = UDim2.new(0, 20, 0, 120)
+            hitboxPanel.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            hitboxPanel.BackgroundTransparency = 0.3
+            hitboxPanel.Visible = false
+            hitboxPanel.ZIndex = 2
+            hitboxPanel.Parent = sectionFrame
+            
+            local hitboxPanelCorner = Instance.new("UICorner")
+            hitboxPanelCorner.CornerRadius = UDim.new(0, 8)
+            hitboxPanelCorner.Parent = hitboxPanel
+
+            for _, child in ipairs(hitboxPanel:GetDescendants()) do
+                if child:IsA("GuiObject") then
+                    child.ZIndex = 2
+                end
+            end
+
+            local nefy111Button = Instance.new("TextButton")
+            nefy111Button.Size = UDim2.new(0, 150, 0, 40)
+            nefy111Button.Position = UDim2.new(0, 10, 0, 10)
+            nefy111Button.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            nefy111Button.Text = "nefy111"
+            nefy111Button.TextColor3 = Color3.fromRGB(255, 206, 9)
+            nefy111Button.TextSize = 18
+            nefy111Button.Font = Enum.Font.Gotham
+            nefy111Button.ZIndex = 2
+            nefy111Button.Parent = hitboxPanel
+            
+            local nefy111ButtonCorner = Instance.new("UICorner")
+            nefy111ButtonCorner.CornerRadius = UDim.new(0, 6)
+            nefy111ButtonCorner.Parent = nefy111Button
+
+            local davidFishButton = Instance.new("TextButton")
+            davidFishButton.Size = UDim2.new(0, 150, 0, 40)
+            davidFishButton.Position = UDim2.new(0, 180, 0, 10)
+            davidFishButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            davidFishButton.Text = "David da"
+            davidFishButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            davidFishButton.TextSize = 18
+            davidFishButton.Font = Enum.Font.Gotham
+            davidFishButton.ZIndex = 2
+            davidFishButton.Parent = hitboxPanel
+            
+            local davidFishButtonCorner = Instance.new("UICorner")
+            davidFishButtonCorner.CornerRadius = UDim.new(0, 6)
+            davidFishButtonCorner.Parent = davidFishButton
+
+            hitboxButton.MouseButton1Click:Connect(function()
+                togglePanel(hitboxPanel, hitboxButton)
+            end)
+
+            nefy111Button.MouseButton1Click:Connect(function()
+                _G.HeadSize = 50
+                _G.Disabled = true
+
+                game:GetService('RunService').RenderStepped:Connect(function()
+                    if _G.Disabled then
+                        for _, v in next, game:GetService('Players'):GetPlayers() do
+                            if v.Name ~= game:GetService('Players').LocalPlayer.Name then
+                                pcall(function()
+                                    v.Character.HumanoidRootPart.Size = Vector3.new(_G.HeadSize, _G.HeadSize, _G.HeadSize)
+                                    v.Character.HumanoidRootPart.Transparency = 0.7
+                                    v.Character.HumanoidRootPart.BrickColor = BrickColor.new("Really blue")
+                                    v.Character.HumanoidRootPart.Material = "Neon"
+                                    v.Character.HumanoidRootPart.CanCollide = false
+                                end)
+                            end
+                        end
+                    end
+                end)
+            end)
+
+            davidFishButton.MouseButton1Click:Connect(function()
+                _G.Transparency = 0.7
+
+                local HACKEDBYG00BKID = Instance.new("ScreenGui")
+                local Frame = Instance.new("Frame")
+                local TextLabel = Instance.new("TextLabel")
+                local TextLabel_2 = Instance.new("TextLabel")
+                local TextButton = Instance.new("TextButton")
+                local TextBox = Instance.new("TextBox")
+
+                HACKEDBYG00BKID.Name = "HACKED BY G00BKID"
+                HACKEDBYG00BKID.Parent = game:GetService("CoreGui")
+                HACKEDBYG00BKID.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+                Frame.Parent = HACKEDBYG00BKID
+                Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Frame.BorderSizePixel = 0
+                Frame.Position = UDim2.new(0.33098945, 0, 0.397435904, 0)
+                Frame.Size = UDim2.new(0, 235, 0, 173)
+                
+                local frameCorner = Instance.new("UICorner")
+                frameCorner.CornerRadius = UDim.new(0, 8)
+                frameCorner.Parent = Frame
+
+                TextLabel.Parent = Frame
+                TextLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+                TextLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                TextLabel.BorderSizePixel = 0
+                TextLabel.Position = UDim2.new(-0.106382981, 0, -0.0809248537, 0)
+                TextLabel.Size = UDim2.new(0, 285, 0, 35)
+                TextLabel.Font = Enum.Font.Gotham
+                TextLabel.Text = "Hitbox Expander"
+                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextLabel.TextScaled = true
+                TextLabel.TextSize = 14
+                TextLabel.TextWrapped = true
+                
+                local textLabelCorner = Instance.new("UICorner")
+                textLabelCorner.CornerRadius = UDim.new(0, 6)
+                textLabelCorner.Parent = TextLabel
+
+                TextLabel_2.Parent = Frame
+                TextLabel_2.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+                TextLabel_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                TextLabel_2.BorderSizePixel = 0
+                TextLabel_2.Position = UDim2.new(-0.106382981, 0, 0.947976887, 0)
+                TextLabel_2.Size = UDim2.new(0, 285, 0, 35)
+                TextLabel_2.Font = Enum.Font.Gotham
+                TextLabel_2.Text = "By David"
+                TextLabel_2.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextLabel_2.TextScaled = true
+                TextLabel_2.TextSize = 14
+                TextLabel_2.TextWrapped = true
+                
+                local textLabel2Corner = Instance.new("UICorner")
+                textLabel2Corner.CornerRadius = UDim.new(0, 6)
+                textLabel2Corner.Parent = TextLabel_2
+
+                TextButton.Parent = Frame
+                TextButton.BackgroundColor3 = Color3.fromRGB(80, 120, 80)
+                TextButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                TextButton.BorderSizePixel = 0
+                TextButton.Position = UDim2.new(0.0723404288, 0, 0.549132943, 0)
+                TextButton.Size = UDim2.new(0, 200, 0, 50)
+                TextButton.Font = Enum.Font.Gotham
+                TextButton.Text = "Expand"
+                TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextButton.TextScaled = true
+                TextButton.TextSize = 14
+                TextButton.TextWrapped = true
+                
+                local textButtonCorner = Instance.new("UICorner")
+                textButtonCorner.CornerRadius = UDim.new(0, 6)
+                textButtonCorner.Parent = TextButton
+
+                TextBox.Parent = Frame
+                TextBox.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+                TextBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                TextBox.BorderSizePixel = 0
+                TextBox.Position = UDim2.new(0.314893603, 0, 0.213872835, 0)
+                TextBox.Size = UDim2.new(0, 85, 0, 37)
+                TextBox.Font = Enum.Font.Gotham
+                TextBox.Text = ""
+                TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextBox.TextScaled = true
+                TextBox.TextSize = 14
+                TextBox.TextWrapped = true
+                
+                local textBoxCorner = Instance.new("UICorner")
+                textBoxCorner.CornerRadius = UDim.new(0, 6)
+                textBoxCorner.Parent = TextBox
+
+                TextButton.MouseButton1Down:Connect(function()
+                    while wait(1.5) do
+                        local Players = game:GetService("Players")
+                        local allPlayers = Players:GetPlayers()
+                        local LocalPlayer = Players.LocalPlayer
+
+                        for _, player in pairs(allPlayers) do
+                            if LocalPlayer ~= player then
+                                local char = player.Character
+                                if char then
+                                    local Ht = char:FindFirstChild('HumanoidRootPart')
+                                    Ht.Size = Vector3.new(TextBox.Text, TextBox.Text, TextBox.Text)
+                                    Ht.Transparency = _G.Transparency
+                                end
+                            end
+                        end
+                    end
+                end)
+
+                local dragging
+                local dragInput
+                local dragStart
+                local startPos
+
+                local function update(input)
+                    local delta = input.Position - dragStart
+                    Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                end
+
+                Frame.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        dragging = true
+                        dragStart = input.Position
+                        startPos = Frame.Position
+
+                        input.Changed:Connect(function()
+                            if input.UserInputState == Enum.UserInputState.End then
+                                dragging = false
+                            end
+                        end)
+                    end
+                end)
+
+                Frame.InputChanged:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                        dragInput = input
+                    end
+                end)
+
+                UserInputService.InputChanged:Connect(function(input)
+                    if input == dragInput and dragging then
+                        if Frame.Visible then
+                            update(input)
+                        end
+                    end
+                end)
+            end)
+
+        elseif section == "Hub" then
+            -- Кнопка Solara Hub
+            local solaraHubButton = Instance.new("TextButton")
+            solaraHubButton.Size = UDim2.new(0, 150, 0, 40)
+            solaraHubButton.Position = UDim2.new(0, 20, 0, 20)
+            solaraHubButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            solaraHubButton.Text = "Solara Hub"
+            solaraHubButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            solaraHubButton.TextSize = 18
+            solaraHubButton.Font = Enum.Font.Gotham
+            solaraHubButton.ZIndex = 1
+            solaraHubButton.Parent = sectionFrame
+
+            local solaraHubButtonCorner = Instance.new("UICorner")
+            solaraHubButtonCorner.CornerRadius = UDim.new(0, 6)
+            solaraHubButtonCorner.Parent = solaraHubButton
+
+            -- Эффект при наведении
+            solaraHubButton.MouseEnter:Connect(function()
+                game:GetService("TweenService"):Create(
+                    solaraHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+                ):Play()
+            end)
+            solaraHubButton.MouseLeave:Connect(function()
+                game:GetService("TweenService"):Create(
+                    solaraHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+                ):Play()
+            end)
+
+            -- Кнопка Ez Hub
+            local ezHubButton = Instance.new("TextButton")
+            ezHubButton.Size = UDim2.new(0, 150, 0, 40)
+            ezHubButton.Position = UDim2.new(0, 20, 0, 80)
+            ezHubButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            ezHubButton.Text = "Ez Hub"
+            ezHubButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            ezHubButton.TextSize = 18
+            ezHubButton.Font = Enum.Font.Gotham
+            ezHubButton.ZIndex = 1
+            ezHubButton.Parent = sectionFrame
+
+            local ezHubButtonCorner = Instance.new("UICorner")
+            ezHubButtonCorner.CornerRadius = UDim.new(0, 6)
+            ezHubButtonCorner.Parent = ezHubButton
+
+            -- Эффект при наведении
+            ezHubButton.MouseEnter:Connect(function()
+                game:GetService("TweenService"):Create(
+                    ezHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+                ):Play()
+            end)
+            ezHubButton.MouseLeave:Connect(function()
+                game:GetService("TweenService"):Create(
+                    ezHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+                ):Play()
+            end)
+
+            -- Кнопка Magma Hub
+            local magmaHubButton = Instance.new("TextButton")
+            magmaHubButton.Size = UDim2.new(0, 150, 0, 40)
+            magmaHubButton.Position = UDim2.new(0, 20, 0, 140)
+            magmaHubButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            magmaHubButton.Text = "Magma Hub"
+            magmaHubButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            magmaHubButton.TextSize = 18
+            magmaHubButton.Font = Enum.Font.Gotham
+            magmaHubButton.ZIndex = 1
+            magmaHubButton.Parent = sectionFrame
+
+            local magmaHubButtonCorner = Instance.new("UICorner")
+            magmaHubButtonCorner.CornerRadius = UDim.new(0, 6)
+            magmaHubButtonCorner.Parent = magmaHubButton
+
+            -- Эффект при наведении
+            magmaHubButton.MouseEnter:Connect(function()
+                game:GetService("TweenService"):Create(
+                    magmaHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+                ):Play()
+            end)
+            magmaHubButton.MouseLeave:Connect(function()
+                game:GetService("TweenService"):Create(
+                    magmaHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+                ):Play()
+            end)
+
+            -- Кнопка Air Hub
+            local airHubButton = Instance.new("TextButton")
+            airHubButton.Size = UDim2.new(0, 150, 0, 40)
+            airHubButton.Position = UDim2.new(0, 20, 0, 200)
+            airHubButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            airHubButton.Text = "Air Hub"
+            airHubButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            airHubButton.TextSize = 18
+            airHubButton.Font = Enum.Font.Gotham
+            airHubButton.ZIndex = 1
+            airHubButton.Parent = sectionFrame
+
+            local airHubButtonCorner = Instance.new("UICorner")
+            airHubButtonCorner.CornerRadius = UDim.new(0, 6)
+            airHubButtonCorner.Parent = airHubButton
+
+            -- Эффект при наведении
+            airHubButton.MouseEnter:Connect(function()
+                game:GetService("TweenService"):Create(
+                    airHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+                ):Play()
+            end)
+            airHubButton.MouseLeave:Connect(function()
+                game:GetService("TweenService"):Create(
+                    airHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+                ):Play()
+            end)
+
+            -- Кнопка Trengle Hub
+            local trengleHubButton = Instance.new("TextButton")
+            trengleHubButton.Size = UDim2.new(0, 150, 0, 40)
+            trengleHubButton.Position = UDim2.new(0, 200, 0, 80)
+            trengleHubButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            trengleHubButton.Text = "Trengle Hub"
+            trengleHubButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            trengleHubButton.TextSize = 18
+            trengleHubButton.Font = Enum.Font.Gotham
+            trengleHubButton.ZIndex = 1
+            trengleHubButton.Parent = sectionFrame
+
+            local trengleHubButtonCorner = Instance.new("UICorner")
+            trengleHubButtonCorner.CornerRadius = UDim.new(0, 6)
+            trengleHubButtonCorner.Parent = trengleHubButton
+
+            -- Эффект при наведении
+            trengleHubButton.MouseEnter:Connect(function()
+                game:GetService("TweenService"):Create(
+                    trengleHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+                ):Play()
+            end)
+            trengleHubButton.MouseLeave:Connect(function()
+                game:GetService("TweenService"):Create(
+                    trengleHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+                ):Play()
+            end)
+
+            -- Кнопка Externity Hub
+            local externityHubButton = Instance.new("TextButton")
+            externityHubButton.Size = UDim2.new(0, 150, 0, 40)
+            externityHubButton.Position = UDim2.new(0, 200, 0, 20)
+            externityHubButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            externityHubButton.Text = "Externity Hub"
+            externityHubButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+            externityHubButton.TextSize = 18
+            externityHubButton.Font = Enum.Font.Gotham
+            externityHubButton.ZIndex = 1
+            externityHubButton.Parent = sectionFrame
+
+            local externityHubButtonCorner = Instance.new("UICorner")
+            externityHubButtonCorner.CornerRadius = UDim.new(0, 6)
+            externityHubButtonCorner.Parent = externityHubButton
+
+            -- Эффект при наведении
+            externityHubButton.MouseEnter:Connect(function()
+                game:GetService("TweenService"):Create(
+                    externityHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+                ):Play()
+            end)
+            externityHubButton.MouseLeave:Connect(function()
+                game:GetService("TweenService"):Create(
+                    externityHubButton,
+                    TweenInfo.new(0.2),
+                    {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+                ):Play()
+            end)
+
+            -- Логика для кнопок
+            solaraHubButton.MouseButton1Click:Connect(function()
+                pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/samuraa1/Solara-Hub/refs/heads/main/Solara%20Hub.lua"))()
+                end)
+            end)
+
+            ezHubButton.MouseButton1Click:Connect(function()
+                pcall(function()
+                    loadstring(game:HttpGet('https://raw.githubusercontent.com/debug420/Ez-Industries-Launcher-Data/master/Launcher.lua', true))()
+                end)
+            end)
+
+            magmaHubButton.MouseButton1Click:Connect(function()
+                pcall(function()
+                    loadstring(game:HttpGet('https://raw.githubusercontent.com/Commandcracker/Magma-Hub/main/main.lua'))()
+                end)
+            end)
+
+            airHubButton.MouseButton1Click:Connect(function()
+                pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/AirHub/main/AirHub.lua"))()
+                end)
+            end)
+
+            trengleHubButton.MouseButton1Click:Connect(function()
+                pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Fantemil/Trenglehub/main/trenglehub.lua"))()
+                end)
+            end)
+
+            externityHubButton.MouseButton1Click:Connect(function()
+                pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/PServerYT/ExternityHub/main/ExternityHub.lua"))()
+                end)
+            end)
+
+        elseif section == "Univ" then
+            -- Кнопка Orca
+            local orcaButton = Instance.new("TextButton")
+            orcaButton.Size = UDim2.new(0, 150, 0, 40)
+            orcaButton.Position = UDim2.new(0, 20, 0, 20)
+            orcaButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            orcaButton.Text = "Orca"
+            orcaButton.TextColor3 = Color3.fromRGB(127, 71, 227)
+            orcaButton.TextSize = 18
+            orcaButton.Font = Enum.Font.Gotham
+            orcaButton.ZIndex = 1
+            orcaButton.Parent = sectionFrame
+            
+            local orcaButtonCorner = Instance.new("UICorner")
+            orcaButtonCorner.CornerRadius = UDim.new(0, 6)
+            orcaButtonCorner.Parent = orcaButton
+
+            -- Кнопка Infinite Yield
+            local infiniteYieldButton = Instance.new("TextButton")
+            infiniteYieldButton.Size = UDim2.new(0, 150, 0, 40)
+            infiniteYieldButton.Position = UDim2.new(0, 20, 0, 80)
+            infiniteYieldButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            infiniteYieldButton.Text = "Infinite Yield"
+            infiniteYieldButton.TextColor3 = Color3.fromRGB(216, 79, 81)
+            infiniteYieldButton.TextSize = 18
+            infiniteYieldButton.Font = Enum.Font.Gotham
+            infiniteYieldButton.ZIndex = 1
+            infiniteYieldButton.Parent = sectionFrame
+            
+            local infiniteYieldButtonCorner = Instance.new("UICorner")
+            infiniteYieldButtonCorner.CornerRadius = UDim.new(0, 6)
+            infiniteYieldButtonCorner.Parent = infiniteYieldButton
+
+            -- Кнопка Nameless Admin
+            local namelessAdminButton = Instance.new("TextButton")
+            namelessAdminButton.Size = UDim2.new(0, 150, 0, 40)
+            namelessAdminButton.Position = UDim2.new(0, 20, 0, 140)
+            namelessAdminButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            namelessAdminButton.Text = "Nam. Admin"
+            namelessAdminButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            namelessAdminButton.TextSize = 18
+            namelessAdminButton.Font = Enum.Font.Gotham
+            namelessAdminButton.ZIndex = 1
+            namelessAdminButton.Parent = sectionFrame
+            
+            local namelessAdminButtonCorner = Instance.new("UICorner")
+            namelessAdminButtonCorner.CornerRadius = UDim.new(0, 6)
+            namelessAdminButtonCorner.Parent = namelessAdminButton
+
+            -- Кнопка Dex
+            local dexButton = Instance.new("TextButton")
+            dexButton.Size = UDim2.new(0, 150, 0, 40)
+            dexButton.Position = UDim2.new(0, 20, 0, 200)
+            dexButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+            dexButton.Text = "Dex"
+            dexButton.TextColor3 = Color3.fromRGB(19, 162, 213)
+            dexButton.TextSize = 18
+            dexButton.Font = Enum.Font.Gotham
+            dexButton.ZIndex = 1
+            dexButton.Parent = sectionFrame
+            
+            local dexButtonCorner = Instance.new("UICorner")
+            dexButtonCorner.CornerRadius = UDim.new(0, 6)
+            dexButtonCorner.Parent = dexButton
+
+            orcaButton.MouseButton1Click:Connect(function()
+                loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/richie0866/orca/master/public/snapshot.lua"))()
+            end)
+
+            infiniteYieldButton.MouseButton1Click:Connect(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+            end)
+
+            namelessAdminButton.MouseButton1Click:Connect(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ltseverydayyou/Nameless-Admin/main/Source.lua"))()
+            end)
+
+            dexButton.MouseButton1Click:Connect(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()
+            end)
+
+        else
+            local sectionLabel = Instance.new("TextLabel")
+            sectionLabel.Size = UDim2.new(0, 380, 0, 280)
+            sectionLabel.Position = UDim2.new(0.5, -190, 0.5, -140)
+            sectionLabel.Text = "Content for " .. section
+            sectionLabel.TextColor3 = Color3.fromRGB(255, 206, 9)
+            sectionLabel.TextSize = 24
+            sectionLabel.Font = Enum.Font.Gotham
+            sectionLabel.BackgroundTransparency = 1
+            sectionLabel.TextWrapped = true
+            sectionLabel.Parent = sectionFrame
+        end
+
+        sectionFrames[section] = sectionFrame
+
+        button.MouseButton1Click:Connect(function()
+            if currentFrame then
+                currentFrame.Visible = false
+            end
+            sectionFrame.Visible = true
+            currentFrame = sectionFrame
+        end)
+    end
+
+    if sectionFrames[sections[1]] then
+        sectionFrames[sections[1]].Visible = true
+        currentFrame = sectionFrames[sections[1]]
+    end
+
+    -- Кнопка сворачивания
+    local minimizeButton = Instance.new("TextButton")
+    minimizeButton.Size = UDim2.new(0, 40, 0, 40)
+    minimizeButton.Position = UDim2.new(0, 350, 0, 250)
+    minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+    minimizeButton.Text = "–"
+    minimizeButton.TextColor3 = Color3.fromRGB(23, 24, 30)
+    minimizeButton.TextSize = 20
+    minimizeButton.Font = Enum.Font.Gotham
+    minimizeButton.Parent = frame
+    
+    local minimizeButtonCorner = Instance.new("UICorner")
+    minimizeButtonCorner.CornerRadius = UDim.new(0, 8)
+    minimizeButtonCorner.Parent = minimizeButton
+    
+    -- Эффект при наведении
+    minimizeButton.MouseEnter:Connect(function()
+        game:GetService("TweenService"):Create(
+            minimizeButton,
+            TweenInfo.new(0.2),
+            {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+        ):Play()
+    end)
+    minimizeButton.MouseLeave:Connect(function()
+        game:GetService("TweenService"):Create(
+            minimizeButton,
+            TweenInfo.new(0.2),
+            {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+        ):Play()
+    end)
+
+    minimizeButton.MouseButton1Click:Connect(function()
+        frame.Visible = false
+        toggleButton.Visible = true
+    end)
+
+    toggleButton.MouseButton1Click:Connect(function()
+        frame.Visible = true
+        toggleButton.Visible = false
+    end)
+
+    -- Кнопка закрытия
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 40, 0, 40)
+    closeButton.Position = UDim2.new(0, 300, 0, 250)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+    closeButton.Text = "✖"
+    closeButton.TextColor3 = Color3.fromRGB(23, 24, 30)
+    closeButton.TextSize = 18
+    closeButton.Font = Enum.Font.Gotham
+    closeButton.Parent = frame
+    
+    local closeButtonCorner = Instance.new("UICorner")
+    closeButtonCorner.CornerRadius = UDim.new(0, 8)
+    closeButtonCorner.Parent = closeButton
+    
+    -- Эффект при наведении
+    closeButton.MouseEnter:Connect(function()
+        game:GetService("TweenService"):Create(
+            closeButton,
+            TweenInfo.new(0.2),
+            {BackgroundColor3 = Color3.fromRGB(23, 24, 30)}
+        ):Play()
+    end)
+    closeButton.MouseLeave:Connect(function()
+        game:GetService("TweenService"):Create(
+            closeButton,
+            TweenInfo.new(0.2),
+            {BackgroundColor3 = Color3.fromRGB(255, 206, 9)}
+        ):Play()
+    end)
+
+    -- Диалоговое окно
+    local function createConfirmDialog()
+        frame.Visible = false
+        toggleButton.Visible = false
+
+        local dialogFrame = Instance.new("Frame")
+        dialogFrame.Size = UDim2.new(0, 250, 0, 150)
+        dialogFrame.Position = UDim2.new(0.5, -125, 0.5, -75)
+        dialogFrame.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+        dialogFrame.BackgroundTransparency = 0
+        dialogFrame.BorderSizePixel = 0
+        dialogFrame.Parent = screenGui
+        
+        local dialogFrameCorner = Instance.new("UICorner")
+        dialogFrameCorner.CornerRadius = UDim.new(0, 8)
+        dialogFrameCorner.Parent = dialogFrame
+
+        local dialogText = Instance.new("TextLabel")
+        dialogText.Size = UDim2.new(0, 230, 0, 50)
+        dialogText.Position = UDim2.new(0.5, -115, 0, 20)
+        dialogText.Text = "Вы точно хотите закрыть скрипт?"
+        dialogText.TextColor3 = Color3.fromRGB(255, 206, 9)
+        dialogText.TextSize = 16
+        dialogText.Font = Enum.Font.Gotham
+        dialogText.BackgroundTransparency = 1
+        dialogText.TextWrapped = true
+        dialogText.Parent = dialogFrame
+
+        local yesButton = Instance.new("TextButton")
+        yesButton.Size = UDim2.new(0, 80, 0, 40)
+        yesButton.Position = UDim2.new(0, 30, 0, 90)
+        yesButton.BackgroundColor3 = Color3.fromRGB(255, 206, 9)
+        yesButton.Text = "Нет"
+        yesButton.TextColor3 = Color3.fromRGB(23, 24, 30)
+        yesButton.TextSize = 18
+        yesButton.Font = Enum.Font.Gotham
+        yesButton.Parent = dialogFrame
+        
+        local yesButtonCorner = Instance.new("UICorner")
+        yesButtonCorner.CornerRadius = UDim.new(0, 6)
+        yesButtonCorner.Parent = yesButton
+
+        local noButton = Instance.new("TextButton")
+        noButton.Size = UDim2.new(0, 80, 0, 40)
+        noButton.Position = UDim2.new(0, 140, 0, 90)
+        noButton.BackgroundColor3 = Color3.fromRGB(23, 24, 30)
+        noButton.Text = "Да"
+        noButton.TextColor3 = Color3.fromRGB(255, 206, 9)
+        noButton.TextSize = 18
+        noButton.Font = Enum.Font.Gotham
+        noButton.Parent = dialogFrame
+        
+        local noButtonCorner = Instance.new("UICorner")
+        noButtonCorner.CornerRadius = UDim.new(0, 6)
+        noButtonCorner.Parent = noButton
+
+        yesButton.MouseButton1Click:Connect(function()
+            dialogFrame:Destroy()
+            frame.Visible = true
+        end)
+
+        noButton.MouseButton1Click:Connect(function()
+            screenGui:Destroy()
+        end)
+    end
+
+    closeButton.MouseButton1Click:Connect(createConfirmDialog)
+
+    -- Перетаскивание фрейма
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+            toggleButton.Position = UDim2.new(
+                frame.Position.X.Scale,
+                frame.Position.X.Offset + frame.Size.X.Offset / 2 - toggleButton.Size.X.Offset / 2,
+                frame.Position.Y.Scale,
+                frame.Position.Y.Offset + frame.Size.Y.Offset / 2 - toggleButton.Size.Y.Offset / 2
+            )
+        end
+    end)
+
+    -- Перетаскивание кнопки S/H
+    local toggleDragging
+    local toggleDragInput
+    local toggleDragStart
+    local toggleStartPos
+
+    toggleButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            toggleDragging = true
+            toggleDragStart = input.Position
+            toggleStartPos = toggleButton.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    toggleDragging = false
+                end
+            end)
+        end
+    end)
+
+    toggleButton.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            toggleDragInput = input
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == toggleDragInput and toggleDragging then
+            local delta = input.Position - toggleDragStart
+            toggleButton.Position = UDim2.new(
+                toggleStartPos.X.Scale,
+                toggleStartPos.X.Offset + delta.X,
+                toggleStartPos.Y.Scale,
+                toggleStartPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+-- Запуск анимации и создание фрейма
+wait(0.5)
+spawn(function()
+    animateFall(byLabel, 1)
+    byLabel:Destroy()
+end)
+spawn(function()
+    animateFall(mainLabel, 1)
+    mainLabel:Destroy()
+end)
+wait(1)
+createMainFrame()
