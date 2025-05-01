@@ -1,0 +1,374 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local maxDistance = 350 -- Дистанция (50 * 7)
+local aimRadius = 100 -- Начальный радиус окружности в пикселях
+local isAiming = false -- Флаг для активации прицеливания
+local isAimBotEnabled = true -- Флаг для включения/выключения аимбота
+local circleColor = Color3.fromRGB(255, 0, 0) -- Начальный цвет круга (красный)
+local circleTransparency = 0 -- Начальная прозрачность круга (0 = непрозрачный)
+
+-- Элементы интерфейса
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player.PlayerGui
+screenGui.Name = "AimBotGui"
+screenGui.ResetOnSpawn = false
+
+local aimCircleFrame = nil -- Будет определен в createAimCircle
+local stroke = nil -- Будет определен в createAimCircle
+local circleGui = nil -- Будет определен в createAimCircle
+local menuFrame = nil -- Будет определен в createMenu
+local minimizeButton = nil -- Будет определен в createMenu
+
+-- Подключения событий для последующего отключения
+local renderConnection = nil
+local inputBeganConnection = nil
+local inputEndedConnection = nil
+
+-- Функция для проверки, находится ли позиция в радиусе окружности
+local function isInAimRadius(targetPos)
+    local screenPos, isVisible = camera:WorldToScreenPoint(targetPos)
+    if isVisible then
+        local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+        local targetScreenPos = Vector2.new(screenPos.X, screenPos.Y)
+        local distance = (screenCenter - targetScreenPos).Magnitude
+        return distance <= aimRadius
+    end
+    return false
+end
+
+-- Функция для поиска ближайшего объекта
+local function findNearestTarget()
+    local closestTarget = nil
+    local closestDistance = maxDistance
+    
+    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+        return nil
+    end
+    
+    for _, target in pairs(Players:GetPlayers()) do
+        if target ~= player and target.Character and target.Character:FindFirstChild("Head") and target.Character.Humanoid and target.Character.Humanoid.Health > 0 then
+            local distance = (player.Character.HumanoidRootPart.Position - target.Character.Head.Position).Magnitude
+            if distance < closestDistance and isInAimRadius(target.Character.Head.Position) then
+                closestDistance = distance
+                closestTarget = target.Character.Head
+            end
+        end
+    end
+    
+    return closestTarget
+end
+
+-- Обработка нажатия ЛКМ
+inputBeganConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and not gameProcessed then
+        isAiming = true
+    end
+end)
+
+-- Обработка отпускания ЛКМ
+inputEndedConnection = UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and not gameProcessed then
+        isAiming = false
+    end
+end)
+
+-- Основной цикл
+renderConnection = RunService.RenderStepped:Connect(function()
+    if isAimBotEnabled and isAiming then
+        local target = findNearestTarget()
+        if target then
+            camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
+        end
+    end
+end)
+
+-- Отображение окружности
+local function createAimCircle()
+    circleGui = Instance.new("ScreenGui")
+    circleGui.Parent = player.PlayerGui
+    circleGui.Name = "AimCircleGui"
+    circleGui.ResetOnSpawn = false
+
+    aimCircleFrame = Instance.new("Frame")
+    aimCircleFrame.Size = UDim2.new(0, aimRadius * 2, 0, aimRadius * 2)
+    aimCircleFrame.Position = UDim2.new(0.5, -aimRadius, 0.5, -aimRadius)
+    aimCircleFrame.BackgroundTransparency = 1
+    aimCircleFrame.Parent = circleGui
+
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(1, 0)
+    uiCorner.Parent = aimCircleFrame
+
+    stroke = Instance.new("UIStroke")
+    stroke.Thickness = 2
+    stroke.Color = circleColor
+    stroke.Transparency = circleTransparency
+    stroke.Parent = aimCircleFrame
+end
+
+-- Обновление окружности
+local function updateAimCircle()
+    if aimCircleFrame then
+        aimCircleFrame.Size = UDim2.new(0, aimRadius * 2, 0, aimRadius * 2)
+        aimCircleFrame.Position = UDim2.new(0.5, -aimRadius, 0.5, -aimRadius)
+        if stroke then
+            stroke.Color = circleColor
+            stroke.Transparency = circleTransparency
+        end
+    end
+end
+
+-- Функция для закрытия скрипта
+local function closeScript()
+    isAimBotEnabled = false
+    if screenGui then
+        screenGui:Destroy()
+    end
+    if circleGui then
+        circleGui:Destroy()
+    end
+    if renderConnection then
+        renderConnection:Disconnect()
+    end
+    if inputBeganConnection then
+        inputBeganConnection:Disconnect()
+    end
+    if inputEndedConnection then
+        inputEndedConnection:Disconnect()
+    end
+end
+
+-- Функция для сворачивания/разворачивания меню
+local function toggleMinimize()
+    if menuFrame.Visible then
+        menuFrame.Visible = false
+        minimizeButton.Visible = true
+    else
+        menuFrame.Visible = true
+        minimizeButton.Visible = false
+    end
+end
+
+-- Создание меню настроек
+local function createMenu()
+    menuFrame = Instance.new("Frame")
+    menuFrame.Size = UDim2.new(0, 180, 0, 190) -- Увеличена высота для новых кнопок
+    menuFrame.Position = UDim2.new(0, 10, 1, -200)
+    menuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    menuFrame.BorderSizePixel = 0
+    menuFrame.Parent = screenGui
+
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, 8)
+    uiCorner.Parent = menuFrame
+
+    -- Кнопка для свёрнутого состояния
+    minimizeButton = Instance.new("ImageButton")
+    minimizeButton.Size = UDim2.new(0, 45, 0, 45)
+    minimizeButton.Position = UDim2.new(0, 10, 1, -55)
+    minimizeButton.BackgroundTransparency = 1
+    minimizeButton.Image = "rbxassetid://129104104313427" -- Вставьте ID изображения для свёрнутой кнопки
+    minimizeButton.Visible = false
+    minimizeButton.Parent = screenGui
+
+    local minimizeCorner = Instance.new("UICorner")
+    minimizeCorner.CornerRadius = UDim.new(0, 4)
+    minimizeCorner.Parent = minimizeButton
+
+    minimizeButton.MouseButton1Click:Connect(toggleMinimize)
+
+    -- Поле для радиуса
+    local radiusLabel = Instance.new("TextLabel")
+    radiusLabel.Size = UDim2.new(0, 60, 0, 20)
+    radiusLabel.Position = UDim2.new(0, 10, 0, 10)
+    radiusLabel.BackgroundTransparency = 1
+    radiusLabel.Text = "Radius"
+    radiusLabel.TextColor3 = Color3.fromRGB(66, 1, 255)
+    radiusLabel.TextSize = 12
+    radiusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    radiusLabel.Parent = menuFrame
+
+    local radiusInput = Instance.new("TextBox")
+    radiusInput.Size = UDim2.new(0, 50, 0, 20)
+    radiusInput.Position = UDim2.new(0, 70, 0, 10)
+    radiusInput.BackgroundColor3 = Color3.fromRGB(27, 27, 29)
+    radiusInput.Text = tostring(aimRadius)
+    radiusInput.TextColor3 = Color3.fromRGB(35, 0, 144)
+    radiusInput.TextSize = 12
+    radiusInput.Parent = menuFrame
+
+    local radiusCorner = Instance.new("UICorner")
+    radiusCorner.CornerRadius = UDim.new(0, 4)
+    radiusCorner.Parent = radiusInput
+
+    -- Поля для цвета (RGB)
+    local colorLabel = Instance.new("TextLabel")
+    colorLabel.Size = UDim2.new(0, 60, 0, 20)
+    colorLabel.Position = UDim2.new(0, 10, 0, 35)
+    colorLabel.BackgroundTransparency = 1
+    colorLabel.Text = "Color"
+    colorLabel.TextColor3 = Color3.fromRGB(66, 1, 255)
+    colorLabel.TextSize = 12
+    colorLabel.TextXAlignment = Enum.TextXAlignment.Left
+    colorLabel.Parent = menuFrame
+
+    local rInput = Instance.new("TextBox")
+    rInput.Size = UDim2.new(0, 30, 0, 20)
+    rInput.Position = UDim2.new(0, 55, 0, 35)
+    rInput.BackgroundColor3 = Color3.fromRGB(27, 27, 29)
+    rInput.Text = "255"
+    rInput.TextColor3 = Color3.fromRGB(35, 0, 144)
+    rInput.TextSize = 12
+    rInput.Parent = menuFrame
+
+    local rCorner = Instance.new("UICorner")
+    rCorner.CornerRadius = UDim.new(0, 4)
+    rCorner.Parent = rInput
+
+    local gInput = Instance.new("TextBox")
+    gInput.Size = UDim2.new(0, 30, 0, 20)
+    gInput.Position = UDim2.new(0, 95, 0, 35)
+    gInput.BackgroundColor3 = Color3.fromRGB(27, 27, 29)
+    gInput.Text = "0"
+    gInput.TextColor3 = Color3.fromRGB(35, 0, 144)
+    gInput.TextSize = 12
+    gInput.Parent = menuFrame
+
+    local gCorner = Instance.new("UICorner")
+    gCorner.CornerRadius = UDim.new(0, 4)
+    gCorner.Parent = gInput
+
+    local bInput = Instance.new("TextBox")
+    bInput.Size = UDim2.new(0, 30, 0, 20)
+    bInput.Position = UDim2.new(0, 135, 0, 35)
+    bInput.BackgroundColor3 = Color3.fromRGB(27, 27, 29)
+    bInput.Text = "0"
+    bInput.TextColor3 = Color3.fromRGB(35, 0, 144)
+    bInput.TextSize = 12
+    bInput.Parent = menuFrame
+
+    local bCorner = Instance.new("UICorner")
+    bCorner.CornerRadius = UDim.new(0, 4)
+    bCorner.Parent = bInput
+
+    -- Поле для прозрачности
+    local transparencyLabel = Instance.new("TextLabel")
+    transparencyLabel.Size = UDim2.new(0, 60, 0, 20)
+    transparencyLabel.Position = UDim2.new(0, 10, 0, 60)
+    transparencyLabel.BackgroundTransparency = 1
+    transparencyLabel.Text = "Transparancy"
+    transparencyLabel.TextColor3 = Color3.fromRGB(66, 1, 255)
+    transparencyLabel.TextSize = 12
+    transparencyLabel.TextXAlignment = Enum.TextXAlignment.Left
+    transparencyLabel.Parent = menuFrame
+
+    local transparencyInput = Instance.new("TextBox")
+    transparencyInput.Size = UDim2.new(0, 50, 0, 20)
+    transparencyInput.Position = UDim2.new(0, 120, 0, 60)
+    transparencyInput.BackgroundColor3 = Color3.fromRGB(27, 27, 29)
+    transparencyInput.Text = tostring(circleTransparency)
+    transparencyInput.TextColor3 = Color3.fromRGB(35, 0, 144)
+    transparencyInput.TextSize = 12
+    transparencyInput.Parent = menuFrame
+
+    local transparencyCorner = Instance.new("UICorner")
+    transparencyCorner.CornerRadius = UDim.new(0, 4)
+    transparencyCorner.Parent = transparencyInput
+
+    -- Кнопка вкл/выкл
+    local toggleButton = Instance.new("ImageButton")
+    toggleButton.Size = UDim2.new(0, 45, 0, 45)
+    toggleButton.Position = UDim2.new(0, 10, 0, 85)
+    toggleButton.BackgroundTransparency = 1
+    toggleButton.Image = "rbxassetid://131788422260040" -- Состояние ON
+    toggleButton.Parent = menuFrame
+
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 4)
+    toggleCorner.Parent = toggleButton
+
+    -- Кнопка закрытия
+    local closeButton = Instance.new("ImageButton")
+    closeButton.Size = UDim2.new(0, 45, 0, 45)
+    closeButton.Position = UDim2.new(0, 65, 0, 85)
+    closeButton.BackgroundTransparency = 1
+    closeButton.Image = "rbxassetid://83056535686883" -- Вставьте ID изображения для кнопки закрытия
+    closeButton.Parent = menuFrame
+
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 4)
+    closeCorner.Parent = closeButton
+
+    -- Кнопка сворачивания
+    local minimizeMenuButton = Instance.new("ImageButton")
+    minimizeMenuButton.Size = UDim2.new(0, 45, 0, 45)
+    minimizeMenuButton.Position = UDim2.new(0, 120, 0, 85)
+    minimizeMenuButton.BackgroundTransparency = 1
+    minimizeMenuButton.Image = "rbxassetid://129104104313427" -- Вставьте ID изображения для кнопки сворачивания
+    minimizeMenuButton.Parent = menuFrame
+
+    local minimizeMenuCorner = Instance.new("UICorner")
+    minimizeMenuCorner.CornerRadius = UDim.new(0, 4)
+    minimizeMenuCorner.Parent = minimizeMenuButton
+
+    -- Обработка ввода радиуса
+    radiusInput.FocusLost:Connect(function()
+        local value = tonumber(radiusInput.Text)
+        if value and value >= 10 and value <= 500 then
+            aimRadius = value
+            updateAimCircle()
+        else
+            radiusInput.Text = tostring(aimRadius)
+        end
+    end)
+
+    -- Обработка ввода цвета
+    local function updateColor()
+        local r = tonumber(rInput.Text) or 255
+        local g = tonumber(gInput.Text) or 0
+        local b = tonumber(bInput.Text) or 0
+        r = math.clamp(r, 0, 255)
+        g = math.clamp(g, 0, 255)
+        b = math.clamp(b, 0, 255)
+        circleColor = Color3.fromRGB(r, g, b)
+        updateAimCircle()
+        rInput.Text = tostring(r)
+        gInput.Text = tostring(g)
+        bInput.Text = tostring(b)
+    end
+
+    rInput.FocusLost:Connect(updateColor)
+    gInput.FocusLost:Connect(updateColor)
+    bInput.FocusLost:Connect(updateColor)
+
+    -- Обработка ввода прозрачности
+    transparencyInput.FocusLost:Connect(function()
+        local value = tonumber(transparencyInput.Text)
+        if value and value >= 0 and value <= 1 then
+            circleTransparency = value
+            updateAimCircle()
+        else
+            transparencyInput.Text = tostring(circleTransparency)
+        end
+    end)
+
+    -- Обработка кнопки вкл/выкл
+    toggleButton.MouseButton1Click:Connect(function()
+        isAimBotEnabled = not isAimBotEnabled
+        toggleButton.Image = isAimBotEnabled and "rbxassetid://131788422260040" or "rbxassetid://132459411160936"
+    end)
+
+    -- Обработка кнопки закрытия
+    closeButton.MouseButton1Click:Connect(closeScript)
+
+    -- Обработка кнопки сворачивания
+    minimizeMenuButton.MouseButton1Click:Connect(toggleMinimize)
+end
+
+-- Инициализация
+createAimCircle()
+createMenu()
